@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://khuzaimarashid.vercel.app/sitemap.xml
