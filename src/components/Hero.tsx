@@ -103,9 +103,8 @@ export function Hero() {
               
               <div className="absolute inset-0 rounded-full overflow-hidden glass p-2">
                 <div className="w-full h-full bg-slate-800 rounded-full flex items-center justify-center overflow-hidden relative">
-                  {/* Placeholder for actual image */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/20 to-brand-purple/20"></div>
-                  <Code2Icon className="w-32 h-32 text-slate-600 opacity-50" />
+                  <img src="/profile.jpg" alt="Muhammad Khuzaima Rashid" className="w-full h-full object-cover relative z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/20 to-brand-purple/20 mix-blend-overlay z-20 pointer-events-none"></div>
                 </div>
               </div>
 
