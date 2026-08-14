@@ -12,10 +12,10 @@ export const ScrollSequence = () => {
     if (imagesLoaded < 15) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [imagesLoaded]);
 
@@ -29,8 +29,18 @@ export const ScrollSequence = () => {
       if (!context) return;
       if (imagesRef.current.length === 0) return;
 
-      const scrollTop = document.documentElement.scrollTop;
-      const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
+      if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = Math.max(
+        document.body.scrollHeight, document.documentElement.scrollHeight,
+        document.body.offsetHeight, document.documentElement.offsetHeight,
+        document.documentElement.clientHeight
+      );
+      const maxScrollTop = scrollHeight - window.innerHeight;
       const scrollFraction = maxScrollTop > 0 ? scrollTop / maxScrollTop : 0;
 
       const frameIndex = Math.min(
@@ -62,7 +72,7 @@ export const ScrollSequence = () => {
       // Draw the best available frame
       if (targetImg && targetImg.complete && targetImg.naturalWidth > 0) {
         const canvasRatio = canvas.width / canvas.height;
-        const imgRatio = targetImg.width / targetImg.height;
+        const imgRatio = targetImg.naturalWidth / targetImg.naturalHeight;
         let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
 
         if (canvasRatio > imgRatio) {
