@@ -119,7 +119,7 @@ export const ScrollSequence = () => {
         setImagesLoaded(prev => prev + 1);
       };
       
-      img.src = `/frames/frame-${frameNumber}.jpg`;
+      img.src = `./frames/frame-${frameNumber}.jpg`;
       preloadArray.push(img);
     }
     
