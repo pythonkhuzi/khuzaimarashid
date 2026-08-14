@@ -13,10 +13,12 @@ import { Testimonials } from './components/Testimonials';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
+import { ScrollSequence } from './components/ScrollSequence';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-brand-purple/30 selection:text-white">
+    <div className="min-h-screen text-slate-50 selection:bg-brand-purple/30 selection:text-white bg-transparent">
+      <ScrollSequence />
       <Navbar />
       <main>
         <Hero />
