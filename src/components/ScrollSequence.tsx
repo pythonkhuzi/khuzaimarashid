@@ -21,17 +21,47 @@ export const ScrollSequence = () => {
 
   useEffect(() => {
     let animationFrameId: number;
+    let currentFrameIndex = -1;
 
-    const renderFrame = () => {
+    // Fetch images concurrently
+    const preloadArray: HTMLImageElement[] = [];
+    for (let i = 1; i <= FRAME_COUNT; i++) {
+      const img = new Image();
+      const frameNumber = i.toString().padStart(4, '0');
+      
+      img.onload = () => {
+        setImagesLoaded(prev => prev + 1);
+      };
+      
+      img.onerror = () => {
+        setImagesLoaded(prev => prev + 1);
+      };
+      
+      img.src = `/frames/frame-${frameNumber}.jpg`;
+      preloadArray.push(img);
+    }
+    
+    imagesRef.current = preloadArray;
+
+    // Game-loop style rendering engine (100% robust against dropped scroll events)
+    const renderLoop = () => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+        animationFrameId = requestAnimationFrame(renderLoop);
+        return;
+      }
+      
       const context = canvas.getContext('2d');
-      if (!context) return;
-      if (imagesRef.current.length === 0) return;
+      if (!context || imagesRef.current.length === 0) {
+        animationFrameId = requestAnimationFrame(renderLoop);
+        return;
+      }
 
+      // Sync canvas dimensions
       if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        currentFrameIndex = -1; // Force redraw on resize
       }
 
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -48,96 +78,59 @@ export const ScrollSequence = () => {
         Math.floor(scrollFraction * FRAME_COUNT)
       );
 
-      let targetImg = imagesRef.current[frameIndex];
+      // Only draw if frame changed or forced
+      if (frameIndex !== currentFrameIndex) {
+        let targetImg = imagesRef.current[frameIndex];
 
-      // If the exact frame isn't loaded yet, find the closest loaded frame to keep animation alive
-      if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
-        let searchRadius = 1;
-        while (searchRadius < FRAME_COUNT) {
-          const up = frameIndex + searchRadius;
-          const down = frameIndex - searchRadius;
+        // Find fallback if current isn't ready
+        if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
+          let searchRadius = 1;
+          while (searchRadius < FRAME_COUNT) {
+            const up = frameIndex + searchRadius;
+            const down = frameIndex - searchRadius;
+            if (up < FRAME_COUNT && imagesRef.current[up]?.complete && imagesRef.current[up]?.naturalWidth > 0) {
+              targetImg = imagesRef.current[up];
+              break;
+            }
+            if (down >= 0 && imagesRef.current[down]?.complete && imagesRef.current[down]?.naturalWidth > 0) {
+              targetImg = imagesRef.current[down];
+              break;
+            }
+            searchRadius++;
+          }
+        }
 
-          if (up < FRAME_COUNT && imagesRef.current[up]?.complete && imagesRef.current[up]?.naturalWidth > 0) {
-            targetImg = imagesRef.current[up];
-            break;
+        if (targetImg && targetImg.complete && targetImg.naturalWidth > 0) {
+          const imgW = targetImg.naturalWidth || targetImg.width;
+          const imgH = targetImg.naturalHeight || targetImg.height;
+          
+          const canvasRatio = canvas.width / canvas.height;
+          const imgRatio = imgW / imgH;
+          let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+
+          if (canvasRatio > imgRatio) {
+            drawWidth = canvas.width;
+            drawHeight = canvas.width / imgRatio;
+            offsetY = (canvas.height - drawHeight) / 2;
+          } else {
+            drawHeight = canvas.height;
+            drawWidth = canvas.height * imgRatio;
+            offsetX = (canvas.width - drawWidth) / 2;
           }
-          if (down >= 0 && imagesRef.current[down]?.complete && imagesRef.current[down]?.naturalWidth > 0) {
-            targetImg = imagesRef.current[down];
-            break;
-          }
-          searchRadius++;
+
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(targetImg, offsetX, offsetY, drawWidth, drawHeight);
+          currentFrameIndex = frameIndex;
         }
       }
 
-      // Draw the best available frame
-      if (targetImg && targetImg.complete && targetImg.naturalWidth > 0) {
-        const canvasRatio = canvas.width / canvas.height;
-        const imgRatio = targetImg.naturalWidth / targetImg.naturalHeight;
-        let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
-
-        if (canvasRatio > imgRatio) {
-          drawWidth = canvas.width;
-          drawHeight = canvas.width / imgRatio;
-          offsetY = (canvas.height - drawHeight) / 2;
-        } else {
-          drawHeight = canvas.height;
-          drawWidth = canvas.height * imgRatio;
-          offsetX = (canvas.width - drawWidth) / 2;
-        }
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(targetImg, offsetX, offsetY, drawWidth, drawHeight);
-      }
+      animationFrameId = requestAnimationFrame(renderLoop);
     };
 
-    const handleResize = () => {
-      if (canvasRef.current) {
-        canvasRef.current.width = window.innerWidth;
-        canvasRef.current.height = window.innerHeight;
-        renderFrame();
-      }
-    };
-
-    const handleScroll = () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(renderFrame);
-    };
-
-    // Initialize canvas size
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Fetch images concurrently instead of awaiting sequentially
-    const preloadArray: HTMLImageElement[] = [];
-    for (let i = 1; i <= FRAME_COUNT; i++) {
-      const img = new Image();
-      const frameNumber = i.toString().padStart(4, '0');
-      
-      img.onload = () => {
-        setImagesLoaded(prev => {
-          const newCount = prev + 1;
-          // Force a frame render when images load (important for initial render)
-          if (animationFrameId) cancelAnimationFrame(animationFrameId);
-          animationFrameId = requestAnimationFrame(renderFrame);
-          return newCount;
-        });
-      };
-      
-      img.onerror = () => {
-        setImagesLoaded(prev => prev + 1);
-      };
-      
-      img.src = `/frames/frame-${frameNumber}.jpg`;
-      preloadArray.push(img);
-    }
-    
-    imagesRef.current = preloadArray;
+    // Start render loop
+    animationFrameId = requestAnimationFrame(renderLoop);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, []);
