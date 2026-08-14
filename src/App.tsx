@@ -17,7 +17,7 @@ import { ScrollSequence } from './components/ScrollSequence';
 
 export default function App() {
   return (
-    <div className="min-h-screen text-slate-50 selection:bg-brand-purple/30 selection:text-white bg-transparent">
+    <div className="min-h-screen text-slate-50 selection:bg-brand-purple/30 selection:text-white bg-transparent overflow-x-clip">
       <ScrollSequence />
       <div className="relative z-10">
         <Navbar />

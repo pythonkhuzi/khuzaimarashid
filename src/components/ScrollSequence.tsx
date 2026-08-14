@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 const FRAME_COUNT = 144;
 
 export const ScrollSequence = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const [imagesLoaded, setImagesLoaded] = useState(0);
 
@@ -43,56 +43,49 @@ export const ScrollSequence = () => {
     
     imagesRef.current = preloadArray;
 
-    // Game-loop style rendering engine (100% robust against dropped scroll events)
+    // Bulletproof Game-loop style rendering engine
     const renderLoop = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        animationFrameId = requestAnimationFrame(renderLoop);
-        return;
-      }
-      
-      const context = canvas.getContext('2d');
-      if (!context || imagesRef.current.length === 0) {
-        animationFrameId = requestAnimationFrame(renderLoop);
-        return;
-      }
-
-      // Sync canvas dimensions
-      if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        currentFrameIndex = -1; // Force redraw on resize
-      }
-
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const scrollHeight = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight,
-        document.documentElement.clientHeight
+      // 1. Get accurate scroll position across all possible scrollable elements
+      const scrollTop = Math.max(
+        window.scrollY || 0,
+        window.pageYOffset || 0,
+        document.documentElement.scrollTop || 0,
+        document.body.scrollTop || 0
       );
+
+      // 2. Get accurate maximum scroll height
+      const scrollHeight = Math.max(
+        document.body.scrollHeight || 0,
+        document.documentElement.scrollHeight || 0,
+        document.body.offsetHeight || 0,
+        document.documentElement.offsetHeight || 0,
+        document.documentElement.clientHeight || 0
+      );
+
       const maxScrollTop = scrollHeight - window.innerHeight;
       const scrollFraction = maxScrollTop > 0 ? scrollTop / maxScrollTop : 0;
 
+      // 3. Calculate target frame
       const frameIndex = Math.min(
         FRAME_COUNT - 1,
-        Math.floor(scrollFraction * FRAME_COUNT)
+        Math.max(0, Math.floor(scrollFraction * FRAME_COUNT))
       );
 
-      // Only draw if frame changed or forced
-      if (frameIndex !== currentFrameIndex) {
+      // 4. Fast direct DOM update (bypass React state for 60fps performance)
+      if (frameIndex !== currentFrameIndex && imgRef.current) {
         let targetImg = imagesRef.current[frameIndex];
 
         // Find fallback if current isn't ready
-        if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
+        if (!targetImg || !targetImg.complete) {
           let searchRadius = 1;
           while (searchRadius < FRAME_COUNT) {
             const up = frameIndex + searchRadius;
             const down = frameIndex - searchRadius;
-            if (up < FRAME_COUNT && imagesRef.current[up]?.complete && imagesRef.current[up]?.naturalWidth > 0) {
+            if (up < FRAME_COUNT && imagesRef.current[up]?.complete) {
               targetImg = imagesRef.current[up];
               break;
             }
-            if (down >= 0 && imagesRef.current[down]?.complete && imagesRef.current[down]?.naturalWidth > 0) {
+            if (down >= 0 && imagesRef.current[down]?.complete) {
               targetImg = imagesRef.current[down];
               break;
             }
@@ -100,26 +93,9 @@ export const ScrollSequence = () => {
           }
         }
 
-        if (targetImg && targetImg.complete && targetImg.naturalWidth > 0) {
-          const imgW = targetImg.naturalWidth || targetImg.width;
-          const imgH = targetImg.naturalHeight || targetImg.height;
-          
-          const canvasRatio = canvas.width / canvas.height;
-          const imgRatio = imgW / imgH;
-          let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
-
-          if (canvasRatio > imgRatio) {
-            drawWidth = canvas.width;
-            drawHeight = canvas.width / imgRatio;
-            offsetY = (canvas.height - drawHeight) / 2;
-          } else {
-            drawHeight = canvas.height;
-            drawWidth = canvas.height * imgRatio;
-            offsetX = (canvas.width - drawWidth) / 2;
-          }
-
-          context.clearRect(0, 0, canvas.width, canvas.height);
-          context.drawImage(targetImg, offsetX, offsetY, drawWidth, drawHeight);
+        if (targetImg && targetImg.complete) {
+          // Direct SRC update is extremely fast and bulletproof for object-cover
+          imgRef.current.src = targetImg.src;
           currentFrameIndex = frameIndex;
         }
       }
@@ -138,12 +114,12 @@ export const ScrollSequence = () => {
   return (
     <>
       <div className="fixed inset-0 z-0 pointer-events-none bg-slate-950">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full opacity-100 object-cover"
-          style={{ 
-            transition: 'opacity 0.5s ease'
-          }}
+        {/* Replaced canvas with a standard img tag. The browser natively handles object-cover flawlessly */}
+        <img
+          ref={imgRef}
+          className="w-full h-full object-cover opacity-100"
+          alt="Scroll Animation Background"
+          src="/frames/frame-0001.jpg" // Default starting frame
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/20 to-slate-950/80" />
       </div>
