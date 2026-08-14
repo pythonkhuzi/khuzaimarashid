@@ -41,26 +41,26 @@ export function Hero() {
       <div className="absolute top-1/3 -right-64 w-96 h-96 bg-brand-purple/20 rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-2000"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-12 lg:gap-8 items-center pb-12 lg:pb-0">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-left space-y-6"
+            className="text-center lg:text-left space-y-6 flex flex-col items-center lg:items-start"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-sm font-medium text-brand-blue mb-4 border-brand-blue/30">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-sm font-medium text-brand-blue mb-2 lg:mb-4 border-brand-blue/30">
               <Terminal className="w-4 h-4" />
               <span>Available for new projects</span>
             </div>
             
-            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight">
-              Hi, I'm <br />
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight">
+              Hi, I'm <br className="hidden sm:block lg:hidden" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">
                 Muhammad Khuzaima Rashid
               </span>
             </h1>
             
-            <div className="h-12 flex items-center text-xl lg:text-2xl font-medium text-slate-300">
+            <div className="h-12 flex items-center justify-center lg:justify-start text-xl lg:text-2xl font-medium text-slate-300">
               <span className="mr-2">I am a</span>
               <span className="text-white relative">
                 {currentText}
@@ -68,11 +68,11 @@ export function Hero() {
               </span>
             </div>
 
-            <p className="text-lg text-slate-400 max-w-lg leading-relaxed">
+            <p className="text-base sm:text-lg text-slate-400 max-w-lg leading-relaxed px-4 lg:px-0">
               Building modern, fast, and visually stunning websites that help businesses grow online.
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-4">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
               <a 
                 href="#contact" 
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-brand-blue to-brand-purple text-white font-semibold hover:shadow-lg hover:shadow-brand-blue/25 transition-all group"
@@ -94,7 +94,7 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative hidden lg:block"
+            className="relative w-full max-w-[260px] sm:max-w-sm md:max-w-md mx-auto mt-8 lg:mt-0"
           >
             <div className="relative w-full aspect-square max-w-md mx-auto">
               {/* Decorative elements behind image */}
@@ -112,23 +112,23 @@ export function Hero() {
               <motion.div 
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-10 -left-10 glass px-4 py-3 rounded-2xl flex items-center gap-3"
+                className="absolute top-4 sm:top-10 -left-4 sm:-left-10 glass px-3 sm:px-4 py-2 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 z-30"
               >
-                <div className="w-10 h-10 rounded-full bg-[#E34F26]/20 flex items-center justify-center">
-                  <div className="text-[#E34F26] font-bold text-xs">HTML</div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#E34F26]/20 flex items-center justify-center">
+                  <div className="text-[#E34F26] font-bold text-[10px] sm:text-xs">HTML</div>
                 </div>
-                <div className="text-sm font-semibold">Web Dev</div>
+                <div className="text-xs sm:text-sm font-semibold">Web Dev</div>
               </motion.div>
 
               <motion.div 
                 animate={{ y: [0, 15, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute bottom-10 -right-4 glass px-4 py-3 rounded-2xl flex items-center gap-3"
+                className="absolute bottom-4 sm:bottom-10 -right-4 sm:-right-10 glass px-3 sm:px-4 py-2 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 z-30"
               >
-                <div className="w-10 h-10 rounded-full bg-[#38BDF8]/20 flex items-center justify-center">
-                  <div className="text-[#38BDF8] font-bold text-xs">TW</div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#38BDF8]/20 flex items-center justify-center">
+                  <div className="text-[#38BDF8] font-bold text-[10px] sm:text-xs">TW</div>
                 </div>
-                <div className="text-sm font-semibold">Tailwind</div>
+                <div className="text-xs sm:text-sm font-semibold">Tailwind</div>
               </motion.div>
             </div>
           </motion.div>

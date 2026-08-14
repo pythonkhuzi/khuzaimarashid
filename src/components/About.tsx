@@ -22,20 +22,31 @@ export function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative max-w-sm mx-auto md:max-w-none mb-10 md:mb-0"
+            className="relative max-w-[280px] sm:max-w-sm mx-auto md:max-w-none mb-12 md:mb-0"
           >
-            <div className="aspect-square md:aspect-[4/3] lg:aspect-square rounded-2xl glass overflow-hidden relative group">
+            {/* Glowing Backdrop */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/30 to-brand-purple/30 rounded-2xl blur-2xl -z-10 animate-pulse"></div>
+            
+            <div className="aspect-square md:aspect-[4/3] lg:aspect-square rounded-2xl glass overflow-hidden relative group border border-white/10 shadow-2xl">
               <div className="absolute inset-0 bg-slate-800 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
                 <img src="/profile.jpg" alt="Muhammad Khuzaima Rashid" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80 pointer-events-none"></div>
               <div className="absolute inset-0 bg-brand-purple/10 mix-blend-overlay pointer-events-none"></div>
+              
+              {/* Inner border glow */}
+              <div className="absolute inset-0 rounded-2xl border border-white/5 group-hover:border-white/20 transition-colors pointer-events-none"></div>
             </div>
+            
             {/* Experience Badge */}
-            <div className="absolute -bottom-6 -right-4 md:-right-6 glass p-4 md:p-6 rounded-2xl z-20 border border-brand-blue/20 shadow-xl shadow-brand-blue/10">
+            <motion.div 
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-6 -right-4 md:-right-6 glass p-4 md:p-6 rounded-2xl z-20 border border-brand-blue/30 shadow-xl shadow-brand-blue/20"
+            >
               <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">2+</div>
               <div className="text-xs md:text-sm font-medium text-slate-300 mt-1">Years of<br/>Experience</div>
-            </div>
+            </motion.div>
           </motion.div>
 
           <motion.div
