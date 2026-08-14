@@ -7,6 +7,18 @@ export const ScrollSequence = () => {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const [imagesLoaded, setImagesLoaded] = useState(0);
 
+  // Lock scroll while the initial essential frames load
+  useEffect(() => {
+    if (imagesLoaded < 15) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [imagesLoaded]);
+
   useEffect(() => {
     let animationFrameId: number;
 
@@ -26,11 +38,31 @@ export const ScrollSequence = () => {
         Math.floor(scrollFraction * FRAME_COUNT)
       );
 
-      const img = imagesRef.current[frameIndex];
-      // Only draw if image is fully loaded, otherwise keep the previous frame
-      if (img && img.complete && img.naturalWidth > 0) {
+      let targetImg = imagesRef.current[frameIndex];
+
+      // If the exact frame isn't loaded yet, find the closest loaded frame to keep animation alive
+      if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
+        let searchRadius = 1;
+        while (searchRadius < FRAME_COUNT) {
+          const up = frameIndex + searchRadius;
+          const down = frameIndex - searchRadius;
+
+          if (up < FRAME_COUNT && imagesRef.current[up]?.complete && imagesRef.current[up]?.naturalWidth > 0) {
+            targetImg = imagesRef.current[up];
+            break;
+          }
+          if (down >= 0 && imagesRef.current[down]?.complete && imagesRef.current[down]?.naturalWidth > 0) {
+            targetImg = imagesRef.current[down];
+            break;
+          }
+          searchRadius++;
+        }
+      }
+
+      // Draw the best available frame
+      if (targetImg && targetImg.complete && targetImg.naturalWidth > 0) {
         const canvasRatio = canvas.width / canvas.height;
-        const imgRatio = img.width / img.height;
+        const imgRatio = targetImg.width / targetImg.height;
         let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
 
         if (canvasRatio > imgRatio) {
@@ -44,7 +76,7 @@ export const ScrollSequence = () => {
         }
 
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        context.drawImage(targetImg, offsetX, offsetY, drawWidth, drawHeight);
       }
     };
 
@@ -101,23 +133,35 @@ export const ScrollSequence = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[-2] pointer-events-none bg-slate-950">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full opacity-100 object-cover"
-        style={{ 
-          transition: 'opacity 0.5s ease'
-        }}
-      />
-      {/* Loading overlay for smooth transition */}
-      {imagesLoaded < 10 && (
-        <div className="absolute inset-0 bg-slate-950 flex items-center justify-center transition-opacity duration-1000">
-          <div className="text-brand-blue/50 text-sm animate-pulse">
-            Loading visual experience... {Math.round((imagesLoaded / FRAME_COUNT) * 100)}%
+    <>
+      <div className="fixed inset-0 z-[-2] pointer-events-none bg-slate-950">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full opacity-100 object-cover"
+          style={{ 
+            transition: 'opacity 0.5s ease'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/20 to-slate-950/80" />
+      </div>
+      
+      {/* Global Loading overlay to prevent premature scrolling */}
+      {imagesLoaded < 15 && (
+        <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center transition-opacity duration-1000">
+          <div className="text-brand-blue animate-pulse mb-6 text-xl md:text-2xl tracking-[0.3em] font-light uppercase">
+            Loading Experience
+          </div>
+          <div className="w-64 max-w-[80vw] h-1 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-brand-blue transition-all duration-300 ease-out"
+              style={{ width: `${Math.min(100, (imagesLoaded / 15) * 100)}%` }}
+            />
+          </div>
+          <div className="text-slate-500 text-xs mt-6 uppercase tracking-[0.2em]">
+            Optimizing visual assets... {Math.round((Math.min(imagesLoaded, 15) / 15) * 100)}%
           </div>
         </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/20 to-slate-950/80" />
-    </div>
+    </>
   );
 };
