@@ -119,7 +119,7 @@ export const ScrollSequence = () => {
         setImagesLoaded(prev => prev + 1);
       };
       
-      img.src = `./frames/frame-${frameNumber}.jpg`;
+      img.src = `/frames/frame-${frameNumber}.jpg`;
       preloadArray.push(img);
     }
     
@@ -134,7 +134,7 @@ export const ScrollSequence = () => {
 
   return (
     <>
-      <div className="fixed inset-0 z-[-2] pointer-events-none bg-slate-950">
+      <div className="fixed inset-0 z-0 pointer-events-none bg-slate-950">
         <canvas
           ref={canvasRef}
           className="w-full h-full opacity-100 object-cover"

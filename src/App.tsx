@@ -19,18 +19,20 @@ export default function App() {
   return (
     <div className="min-h-screen text-slate-50 selection:bg-brand-purple/30 selection:text-white bg-transparent">
       <ScrollSequence />
-      <Navbar />
-      <main>
-        <Hero />
-        <About />
-        <Skills />
-        <Projects />
-        <Services />
-        <Experience />
-        <Testimonials />
-        <Contact />
-      </main>
-      <Footer />
+      <div className="relative z-10">
+        <Navbar />
+        <main>
+          <Hero />
+          <About />
+          <Skills />
+          <Projects />
+          <Services />
+          <Experience />
+          <Testimonials />
+          <Contact />
+        </main>
+        <Footer />
+      </div>
       <ScrollToTop />
     </div>
   );
